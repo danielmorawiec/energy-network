@@ -1,0 +1,14 @@
+galaxy_info:
+    role_name: iptables
+    author: KYPO Team
+    description: Set iptable rules and makes them persistent
+    licence: MIT
+    min_ansible_version: 2.3.3
+    platforms:
+        - name: Debian
+          versions:
+              - all
+        - name: Ubuntu
+          versions:
+              - all
+

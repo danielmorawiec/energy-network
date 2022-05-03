@@ -1,0 +1,16 @@
+
+- name: install iptables-persistent package
+  apt:
+      name: iptables-persistent
+      state: present
+  notify: iptables_save
+
+- iptables: '{{ item }}'
+  with_items: '{{ iptables_rules }}'
+  notify: iptables_save
+
+- name: enable netfilter-persistent service
+  service:
+      name: netfilter-persistent
+      enabled: yes
+ 

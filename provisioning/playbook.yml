@@ -1,0 +1,104 @@
+
+- name: Flush ALL rules on MAN
+  hosts: man
+  strategy: free
+  gather_facts: yes
+  become: yes
+  become_user: root
+
+  tasks:
+    - name: setup
+      include_role:
+        name: iptables
+      vars:
+        iptables_rules:
+          - flush: yes
+
+
+- name: Setup DROP rules on MAN
+  hosts: man
+  strategy: free
+  gather_facts: yes
+  become: yes
+  become_user: root
+
+  tasks:
+    - set_fact:
+        private_ip_address_range: ['10.0.0.0/8', '172.16.0.0/12', '224.0.0.0/4']
+    - set_fact:
+        host_interface: 'eth2'
+
+    - name: setup
+      include_role:
+        name: iptables
+      vars:
+        iptables_rules:
+          - chain: FORWARD
+            destination: '{{ item }}'
+            in_interface: '{{ host_interface }}'
+            out_interface: eth0
+            jump: DROP
+      loop: '{{ private_ip_address_range }}'
+
+- name: Update apt packages and install maven
+  hosts:
+    - smart-meter
+    - concentrator
+  gather_facts: no
+  become: yes
+  become_user: root
+  tasks:
+  - name: Update apt packages
+    become: yes
+    apt:
+      update_cache: yes
+
+  - name: Install maven
+    become: yes
+    apt:
+      pkg:
+       - maven
+
+- name: Smart-meter setup
+  hosts:
+    - smart-meter
+  gather_facts: no
+  become: yes
+  become_user: ubuntu
+  tasks: 
+
+  - name: Clone gurux repository
+    become: yes
+    ansible.builtin.git:
+       repo: https://github.com/Gurux/gurux.dlms.java.git
+       dest: /home/ubuntu/gurux
+       clone: yes
+
+  - name: Create smart-meter
+    shell: mvn clean package
+    args:
+      chdir: /home/ubuntu/gurux/gurux.dlms.server.example.java/
+
+- name: Concentrator setup
+  hosts:
+    - concentrator
+  gather_facts: no
+  become: yes
+  become_user: ubuntu
+  tasks: 
+
+  - name: Clone gurux repository
+    become: yes
+    ansible.builtin.git:
+       repo: https://github.com/Gurux/gurux.dlms.java.git
+       dest: /home/ubuntu/gurux
+       clone: yes
+
+  - name: Create concentrator
+    shell: mvn clean package
+    args: 
+      chdir: /home/ubuntu/gurux/gurux.dlms.client.example.java/    
+
+
+
+

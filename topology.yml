@@ -1,0 +1,48 @@
+name: energy-network
+
+hosts:
+  - name: smart-meter
+    base_box:
+      image: ubuntu-focal-x86_64
+      man_user: ubuntu
+    flavor: csirtmu.tiny1x2
+
+  - name: concentrator
+    base_box:
+      image: ubuntu-focal-x86_64
+      man_user: ubuntu
+    flavor: csirtmu.tiny1x2
+
+routers:
+  - name: router
+    base_box:
+      image: debian-9-x86_64
+      man_user: debian
+    flavor: csirtmu.tiny1x2
+
+networks:
+  - name: smart-meter-switch
+    cidr: 10.10.20.0/24
+
+  - name: concentrator-switch
+    cidr: 10.10.30.0/24
+
+net_mappings:
+    - host: smart-meter
+      network: smart-meter-switch
+      ip: 10.10.20.5
+
+    - host: concentrator
+      network: concentrator-switch
+      ip: 10.10.30.5
+
+router_mappings:
+    - router: router
+      network: smart-meter-switch
+      ip: 10.10.20.1
+
+    - router: router
+      network: concentrator-switch
+      ip: 10.10.30.1
+
+groups: []
